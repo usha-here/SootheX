@@ -1,5 +1,5 @@
-import genToken from "../config/token"
-import User from "../models/user.model"
+import genToken from "../config/token.js"
+import User from "../models/user.model.js"
 import bcrypt from "bcryptjs"
 
 export const signUp = async (req,res)=>{
@@ -43,10 +43,11 @@ export const Login = async (req,res)=>{
         if(!user){
             return res.status(400).json({message:"no user wih this email!"})
         }
-        if(password.length<6){
-            return res.status(400).json({message:"Password must be atleast 6 characters"})
+        
+        const isMatch = await bcrypt.compare(password,user.password)
+        if(!isMatch){
+            return res.status(400).json({message:"incorrect password"})
         }
-        const hashedPassword = await bcrypt.hash(password,10)
     
         const token = await genToken(user._id)
         //parse token in cookie
@@ -57,9 +58,19 @@ export const Login = async (req,res)=>{
             secure:false
         })
 
-        return res.status(201).json(user)
+        return res.status(200).json(user)
     }
     catch{
-        return res.status(500).json({message:`sign up error ${error}`})
+        return res.status(500).json({message:`login error ${error}`})
+    }
+}
+
+export const logOut = async(req,res)=>{
+    try{
+        res.clearCookie("token")
+        return res.status(200).json({message:"log out successfully"})
+    }
+    catch (error){
+        return res.status(500).json({message:`logout error ${error}`})
     }
 }
