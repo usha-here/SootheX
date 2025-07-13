@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Card from '../components/Card'
 import image1 from "../assets/image1.png"
 import image2 from "../assets/image2.jpg"
@@ -8,8 +8,17 @@ import image5 from "../assets/image5.png"
 import image6 from "../assets/image6.jpeg"
 import image7 from "../assets/image7.jpeg"
 import { RiImageAddFill } from "react-icons/ri";
+import { useRef } from 'react'
 
 const Customize = () => {
+  const [frontendImage, setFrontendImage] = useState(null)
+  const [backendImage, setBackendImage] = useState(null)
+  const inputImage = useRef()
+  const handleImage=(e)=>{
+    const file = e.target.files[0]
+    setBackendImage(file)
+    setFrontendImage(URL.createObjectURL(file))
+  }
   return (
     <div className='w-full h-[100vh] bg-gradient-to-t from-[black] to-[#04049ab4] flex justify-center items-center flex-col p-[20px] '>
       <h1 className='text-white text-[30px] text-center mb-[30px]'>Select your <span className='text-blue-200'> Assistant image</span></h1>
@@ -23,10 +32,13 @@ const Customize = () => {
           <Card image={image7}/>
           <div className='w-[70px] h-[140 px] lg:w-[150px] lg:h-[250px] bg-[#030326] border-2 border-[#0000ff49] 
           rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-blue-950 cursor-pointer hover:border-4
-          hover:border-white flex items-center justify-center'>
-            <RiImageAddFill className='text-white w-[25px] h-[25px]'/>
+          hover:border-white flex items-center justify-center' onClick={()=>inputImage.current.click()}>
+            {!frontendImage && <RiImageAddFill className='text-white w-[25px] h-[25px]'/>}
+            {frontendImage && <img src={frontendImage} className='h-full object-cover'/>}
           </div>
+          <input type='file' accept='image/*' ref={inputImage} hidden onChange={handleImage}/>
       </div>
+      <button className='min-w-[150px] h-[60px] mt-[30px] text-black font-semibold  bg-white rounded-full text-[19px]'>Next</button>
     </div>
   )
 }
