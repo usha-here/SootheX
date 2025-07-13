@@ -31,15 +31,18 @@ const Customize = () => {
           <Card image={image5}/>
           <Card image={image6}/>
           <Card image={image7}/>
-          <div className='w-[70px] h-[140 px] lg:w-[150px] lg:h-[250px] bg-[#030326] border-2 border-[#0000ff49] 
+          <div className={`w-[70px] h-[140 px] lg:w-[150px] lg:h-[250px] bg-[#030326] border-2 border-[#0000ff49] 
           rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-blue-950 cursor-pointer hover:border-4
-          hover:border-white flex items-center justify-center' onClick={()=>inputImage.current.click()}>
+          hover:border-white flex items-center justify-center ${selectedImage=="input"?"border-4 border-white shadow-2xl shadow-blue-50":null}`} onClick={()=>
+          {inputImage.current.click()
+            setSelectedImage("input")
+          }}>
             {!frontendImage && <RiImageAddFill className='text-white w-[25px] h-[25px]'/>}
             {frontendImage && <img src={frontendImage} className='h-full object-cover'/>}
           </div>
           <input type='file' accept='image/*' ref={inputImage} hidden onChange={handleImage}/>
       </div>
-      <button className='min-w-[150px] h-[60px] mt-[30px] text-black font-semibold  bg-white rounded-full text-[19px]'>Next</button>
+      {selectedImage&&<button className='min-w-[150px] h-[60px] mt-[30px] text-black font-semibold  bg-white rounded-full text-[19px]'>Next</button>}
     </div>
   )
 }
