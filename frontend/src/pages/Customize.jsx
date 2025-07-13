@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import Card from '../components/Card'
 import image1 from "../assets/image1.png"
 import image2 from "../assets/image2.jpg"
@@ -9,10 +9,11 @@ import image6 from "../assets/image6.jpeg"
 import image7 from "../assets/image7.jpeg"
 import { RiImageAddFill } from "react-icons/ri";
 import { useRef } from 'react'
+import { userDataContext } from '../context/userContext'
 
 const Customize = () => {
-  const [frontendImage, setFrontendImage] = useState(null)
-  const [backendImage, setBackendImage] = useState(null)
+  const {serverUrl,userData,setUserData,backendImage,setBackendImage,
+    frontendImage, setFrontendImage,selectedImage,setSelectedImage} = useContext(userDataContext)
   const inputImage = useRef()
   const handleImage=(e)=>{
     const file = e.target.files[0]
