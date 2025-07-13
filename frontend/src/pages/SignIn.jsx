@@ -27,7 +27,7 @@ try {
 
  setUserData(result.data)
  setLoading(false)
- navigate("/customize")
+ navigate("/")
 
 } catch (error) {
   setUserData(null)
