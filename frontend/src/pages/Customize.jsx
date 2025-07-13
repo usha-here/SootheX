@@ -1,12 +1,12 @@
 import React, { useContext, useState } from 'react'
 import Card from '../components/Card'
 import image1 from "../assets/image1.png"
-import image2 from "../assets/image2.jpg"
+import image2 from "../assets/image2.png"
 import image4 from "../assets/image4.png"
 import image3 from "../assets/authBg.png"
 import image5 from "../assets/image5.png"
-import image6 from "../assets/image6.jpeg"
-import image7 from "../assets/image7.jpeg"
+import image6 from "../assets/image6.png"
+import image7 from "../assets/image7.png"
 import { RiImageAddFill } from "react-icons/ri";
 import { useRef } from 'react'
 import { userDataContext } from '../context/userContext'
