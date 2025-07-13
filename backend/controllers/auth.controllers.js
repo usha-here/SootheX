@@ -29,8 +29,8 @@ export const signUp = async (req,res)=>{
 
         return res.status(201).json(user)
     }
-    catch{
-        return res.status(500).json({message:`sign up error ${error}`})
+    catch(error){
+        return res.status(500).json({message:`sign up error ${error.message}`})
     }
 }
 
@@ -60,8 +60,8 @@ export const Login = async (req,res)=>{
 
         return res.status(200).json(user)
     }
-    catch{
-        return res.status(500).json({message:`login error ${error}`})
+    catch(error){
+        return res.status(500).json({message:`login error ${error.message}`})
     }
 }
 
