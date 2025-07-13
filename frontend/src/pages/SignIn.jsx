@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 import bg from "../assets/authBg.png"
 import { IoEye } from "react-icons/io5";
 import { IoEyeOff } from "react-icons/io5";
@@ -8,11 +8,10 @@ import axios from 'axios';
 
 const SignIn = () => {
    const [showPassword,setShowPassword]=useState(false)
-   const {serverUrl}=useContext(userDataContext)
+   const {serverUrl,userData,setUserData}=useContext(userDataContext)
    const navigate= useNavigate();
   const [email,setEmail]=useState("")
-     const [loading,setLoading]=useState(false)
-
+  const [loading,setLoading]=useState(false)
 const [password,setPassword]=useState("")
 const [err,setErr]=useState("")
 
@@ -20,22 +19,21 @@ const [err,setErr]=useState("")
    e.preventDefault()
    setErr("")
    setLoading(true)
+
 try {
   let result=await axios.post(`${serverUrl}/api/auth/signin`,{
     email,password
   },{withCredentials:true} )
- console.log(result.data)
+
+ setUserData(result.data)
  setLoading(false)
 
-
 } catch (error) {
-  console.log(error)
+  setUserData(null)
   setLoading(false)
     setErr(error.response.data.message)
-
 }
 }
-
   return (
     <div className='w-full h-[100vh] bg-cover flex justify-center items-center' style={{backgroundImage:`url(${bg})`}} >
       <form className='w-[90%] h-[600px] max-w-[500px] bg-[#00000062] backdrop-blur shadow-lg shadow-black flex flex-col items-center justify-center gap-[20px] px-[20px]'
@@ -64,8 +62,6 @@ try {
 
        <button className='min-w-[150px] h-[60px] mt-[30px] text-black font-semibold  bg-white rounded-full text-[19px]' disabled={loading}>{loading?"Loading...":"Sign In"}</button>
         <p className='text-[white] text-[18px] cursor-pointer' onClick={() => navigate("/signup")}>Want to create a new account ? <span className='text-blue-400'>Sign Up</span></p>
-
-
 
 </form>
 
