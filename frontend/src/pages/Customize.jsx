@@ -10,10 +10,13 @@ import image7 from "../assets/image7.jpeg"
 import { RiImageAddFill } from "react-icons/ri";
 import { useRef } from 'react'
 import { userDataContext } from '../context/userContext'
+import { useNavigate } from 'react-router-dom'
+
 
 const Customize = () => {
   const {serverUrl,userData,setUserData,backendImage,setBackendImage,
     frontendImage, setFrontendImage,selectedImage,setSelectedImage} = useContext(userDataContext)
+    const navigate = useNavigate()
   const inputImage = useRef()
   const handleImage=(e)=>{
     const file = e.target.files[0]
@@ -42,7 +45,7 @@ const Customize = () => {
           </div>
           <input type='file' accept='image/*' ref={inputImage} hidden onChange={handleImage}/>
       </div>
-      {selectedImage&&<button className='min-w-[150px] h-[60px] mt-[30px] text-black font-semibold  bg-white rounded-full text-[19px]'>Next</button>}
+      {selectedImage&&<button className='min-w-[150px] h-[60px] mt-[30px] text-black font-semibold  bg-white rounded-full text-[19px]' onClick={()=>navigate("/customize2")}>Next</button>}
     </div>
   )
 }
