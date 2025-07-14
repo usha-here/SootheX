@@ -27,6 +27,7 @@ try {
 
  setUserData(result.data)
  setLoading(false)
+ navigate("/")
 
 } catch (error) {
   setUserData(null)
