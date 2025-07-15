@@ -14,7 +14,7 @@ const Customize2 = () => {
 
 
     const handleUpdateAssistant=async ()=>{
-        //setLoading(true)
+        setLoading(true)
         try {
             let formData=new FormData()
             formData.append("assistantName",assistantName)
@@ -25,12 +25,12 @@ const Customize2 = () => {
             }
 
             const result=await axios.post(`${serverUrl}/api/user/update`,formData,{withCredentials:true})
-        //setLoading(false)
+        setLoading(false)
             console.log(result.data)
             setUserData(result.data)
-            //navigate("/")
+            navigate("/")
         } catch (error) {
-            //setLoading(false)
+            setLoading(false)
             console.log(error)
         }
     }
