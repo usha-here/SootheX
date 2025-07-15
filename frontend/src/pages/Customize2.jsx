@@ -1,6 +1,8 @@
 import React, { useContext, useState } from 'react'
 import { userDataContext } from '../context/userContext'
 import axios from 'axios'
+import { MdKeyboardBackspace } from "react-icons/md";
+
 import { useNavigate } from 'react-router-dom';
 
 const Customize2 = () => {
@@ -8,6 +10,7 @@ const Customize2 = () => {
   const [assistantName,setAssistantName]=useState(userData?.
     assistantName||"")
         const [loading,setLoading]=useState(false)
+            const navigate=useNavigate()
 
 
     const handleUpdateAssistant=async ()=>{
@@ -32,8 +35,9 @@ const Customize2 = () => {
         }
     }
   return (
-    <div className='w-full h-[100vh] bg-gradient-to-t from-[black] to-[#04049ab4] flex justify-center items-center flex-col p-[20px] '>
-      
+    <div className='w-full h-[100vh] bg-gradient-to-t from-[black] to-[#04049ab4] flex justify-center items-center flex-col p-[20px] relative'>
+    <MdKeyboardBackspace className='absolute top-[30px] left-[30px] text-white cursor-pointer w-[25px] h-[25px]' onClick={()=>navigate("/customize")} />
+
       <h1 className='text-white text-[30px] text-center mb-[30px]'>
         Enter your <span className='text-blue-200'>Assistant Name</span>
       </h1>

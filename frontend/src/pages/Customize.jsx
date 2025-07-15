@@ -11,6 +11,7 @@ import { RiImageAddFill } from "react-icons/ri";
 import { useRef } from 'react'
 import { userDataContext } from '../context/userContext'
 import { useNavigate } from 'react-router-dom'
+import { MdKeyboardBackspace } from "react-icons/md";
 
 
 const Customize = () => {
@@ -24,7 +25,9 @@ const Customize = () => {
     setFrontendImage(URL.createObjectURL(file))
   }
   return (
-    <div className='w-full h-[100vh] bg-gradient-to-t from-[black] to-[#04049ab4] flex justify-center items-center flex-col p-[20px] '>
+    <div className='w-full h-[100vh] bg-gradient-to-t from-[black] to-[#04049ab4] flex justify-center items-center flex-col p-[20px] relative '>
+      <MdKeyboardBackspace className='absolute top-[30px] left-[30px] text-white cursor-pointer w-[25px] h-[25px]' onClick={()=>navigate("/")}/>
+      
       <h1 className='text-white text-[30px] text-center mb-[30px]'>Select your <span className='text-blue-200'> Assistant image</span></h1>
       <div className='w-full max-w-[900px] flex justify-center items-center flex-wrap gap-[15px]'>
           <Card image={image1}/>
