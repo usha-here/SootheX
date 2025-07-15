@@ -79,10 +79,23 @@ export const askToAssistant = async (req, res) => {
                     userInput: gemResult.userInput,
                     response:`current month is ${moment().format("MMMM")}`
                 });
+            case "google-search":
+            case "youtube-search":
+            case "youtube-play":
+            case "calculator-open":
+            case "instagram-open":
+            case "facebook-open":
+            case "weather-show":
+                return res.json({
+                    type,
+                    userInput: gemResult.userInput,
+                    response: gemResult.response,
+                });
+            default:
+                return res.status(400).json({ response: "Sorry, I can't understand what you mean" });
         }
 
     } catch (error) {
-        console.error("Error in askToAssistant:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Ask Assistant error" });
     }
 }
