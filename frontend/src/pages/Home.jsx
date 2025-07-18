@@ -1,11 +1,11 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { userDataContext } from '../context/userContext'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const Home = () => {
   
-  const {userData,serverUrl,setUserData} = useContext(userDataContext)
+  const {userData,serverUrl,setUserData,getGeminiResponse} = useContext(userDataContext)
   const navigate = useNavigate()
   const handleLogOut=async ()=>{
     try {
@@ -17,6 +17,38 @@ const Home = () => {
       console.log(error)
     }
   }
+  //setting up web speech api
+  useEffect(()=>{
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();   //recognition is object of SpeechRecognition()
+    recognition.continuous = true; //to keep listening
+    recognition.lang = 'en-US'; //convert speech into english language
+
+
+    recognition.onresult=async(e)=>{
+    const transcript = e.results[e.results.length - 1][0].transcript.trim();   //inside trancript we have our speech converted into text
+    console.log("heard:"+ transcript);
+    //if the transcript includes the assistant name, then we can give response
+    if (transcript.toLowerCase().includes(userData.assistantName.toLowerCase())) {
+    const data=await getGeminiResponse(transcript);
+    console.log(data);
+
+    }
+
+
+    }
+    recognition.start();
+
+
+
+  },[])
+
+
+
+
+
+
 
   
   return (
