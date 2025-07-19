@@ -1,6 +1,7 @@
 // gives details of current users 
 import User from "../models/user.model.js"
 import moment from "moment";
+import geminiResponse from "../routes/gemini.js";
 
 export const getCurrentUser = async(req,res)=>{
     try {
@@ -44,17 +45,28 @@ export const askToAssistant = async (req, res) => {
     try {
         const { command } = req.body;
         const user = await User.findById(req.userId);
+        user.history.push(command); //add the command to the user's history
+        user.save(); //save the updated user history
         const userName = user.name
         const assistantName = user.assistantName 
         const result = await geminiResponse(command,assistantName, userName);
-        const jsonMatch = result.match(/{[\s\S]*}/);
-        if (!jsonMatch) {
+        console.log("Gemini API raw result:", result);
+
+        let gemResult;
+        if (typeof result === "string") {
+            const jsonMatch = result.match(/{[\s\S]*}/);
+            if (!jsonMatch) {
+                console.error("No JSON object found in Gemini response:", result);
+                return res.status(400).json({ message: "Sorry, I can't understand what you mean" });
+            }
+            gemResult = JSON.parse(jsonMatch[0]);
+        } else if (typeof result === "object") {
+            gemResult = result;
+        } else {
+            console.error("Unexpected Gemini response type:", typeof result, result);
             return res.status(400).json({ message: "Sorry, I can't understand what you mean" });
         }
-        const gemResult = JSON.parse(jsonMatch[0]);
-        
         const type = gemResult.type;
-
         switch(type) {
             case "get-date": 
                 return res.json({
@@ -87,6 +99,7 @@ export const askToAssistant = async (req, res) => {
             case "instagram-open":
             case "facebook-open":
             case "weather-show":
+            case "general":
                 return res.json({
                     type,
                     userInput: gemResult.userInput,
@@ -97,6 +110,7 @@ export const askToAssistant = async (req, res) => {
         }
 
     } catch (error) {
+        console.error("Error in askToAssistant:", error);
         return res.status(500).json({ message: "Ask Assistant error" });
     }
 }
