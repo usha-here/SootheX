@@ -1,7 +1,8 @@
+import axios from 'axios'
 import React, { useContext, useEffect } from 'react'
 import { userDataContext } from '../context/userContext'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+
 
 const Home = () => {
   
@@ -16,7 +17,7 @@ const Home = () => {
       setUserData(null)
       console.log(error)
     }
-    
+
   }
   //setting up web speech api
   useEffect(()=>{
@@ -33,12 +34,9 @@ const Home = () => {
     //if the transcript includes the assistant name, then we can give response
     if (transcript.toLowerCase().includes(userData.assistantName.toLowerCase())) {
     const data=await getGeminiResponse(transcript);
-    console.log(data);
-
+    console.log("Gemini API response:", data);
     }
-
-
-    }
+}
     recognition.start();
 
 
