@@ -8,6 +8,14 @@ const Home = () => {
   
   const {userData,serverUrl,setUserData,getGeminiResponse} = useContext(userDataContext)
   const navigate = useNavigate()
+
+  const [listening,setListening]=useState(false)
+  const isSpeakingRef=useRef(false)
+  const recognitionRef=useRef(null)
+  const synth=window.speechSynthesis
+
+
+
   const handleLogOut=async ()=>{
     try {
       const result=await axios.get(`${serverUrl}/api/auth/logout`,{withCredentials:true})
@@ -22,7 +30,7 @@ const Home = () => {
   //setting up speak functionality
   const speak=(text)=>{
     const utterence = new SpeechSynthesisUtterance(text);   //inbuilt-in function to convert text to speech
-    window.speechSynthesis.speak(utterence); //speak the text
+    synth.speak(utterence); //speak the text
 
   }
   const handleCommand=(data)=>{
@@ -60,7 +68,40 @@ const Home = () => {
     const recognition = new SpeechRecognition();   //recognition is object of SpeechRecognition()
     recognition.continuous = true; //to keep listening
     recognition.lang = 'en-US'; //convert speech into english language
+    recognitionRef.current = recognition;
 
+    const isRecognizingRef={current: false}; //to check if the recognition is already in progress 
+
+    const safeRecognition=()=>{
+      if(!isSpeakingRef && !isRecognizingRef){
+        try {
+          recognition.start(); //start the speech recognition
+          console.log("Recognition started");
+        } catch (err) {
+          if(err.name!== 'InvalidStateError'){
+            console.error("Start error:", err );
+          }
+          
+        }
+      }
+    }
+    recognition.onstart = () => {
+      console.log("Recognition started");
+    isRecognizingRef.current = true;
+    setListening(true);
+  };
+    recognition.onend = () => {
+      console.log("Recognition ended");
+    isRecognizingRef.current = false;
+    setListening(false);
+
+    if(!isSpeakingRef.current){
+      setTimeout(() => {
+        safeRecognition(); //restart the recognition after 1 second if not speaking
+      }, 1000);
+    }
+
+    
 
     recognition.onresult=async(e)=>{
     const transcript = e.results[e.results.length - 1][0].transcript.trim();   //inside trancript we have our speech converted into text
@@ -70,12 +111,8 @@ const Home = () => {
     const data=await getGeminiResponse(transcript);
     handleCommand(data); //handle the command based on the type
     }
-}
-    recognition.start();
-
-
-
-  },[])
+  };
+} },[]);
 
 
 
