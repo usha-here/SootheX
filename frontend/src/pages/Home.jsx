@@ -19,6 +19,18 @@ const Home = () => {
     }
 
   }
+  //setting up speak functionality
+  const speak=(text)=>{
+    const utterence = new SpeechSynthesisUtterance(text);   //inbuilt-in function to convert text to speech
+    window.speechSynthesis.speak(utterence); //speak the text
+
+  }
+  
+
+
+
+
+
   //setting up web speech api
   useEffect(()=>{
 
@@ -35,6 +47,7 @@ const Home = () => {
     if (transcript.toLowerCase().includes(userData.assistantName.toLowerCase())) {
     const data=await getGeminiResponse(transcript);
     console.log("Gemini API response:", data);
+    speak(data.response); //speak the response from Gemini API
     }
 }
     recognition.start();
