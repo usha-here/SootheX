@@ -44,6 +44,14 @@ const Home = () => {
   //setting up speak functionality
   const speak=(text)=>{
     const utterence = new SpeechSynthesisUtterance(text);   //inbuilt-in function to convert text to speech
+    utterence.lang = 'hi-IN'; 
+    const voices=window.speechSynthesis.getVoices(); 
+    const hindiVoice=voices.find(v=>v.lang === 'hi-IN')
+    if(hindiVoice){
+      utterence.voice=hindiVoice; //set the voice to hindi
+    } 
+
+
     isSpeakingRef.current = true; //set isSpeakingRef to true when speaking starts
     utterence.onend=() =>{
       isSpeakingRef.current = false; //set isSpeakingRef to false when speaking ends
