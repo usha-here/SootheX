@@ -16,6 +16,7 @@ const Home = () => {
       setUserData(null)
       console.log(error)
     }
+    
   }
   //setting up web speech api
   useEffect(()=>{
