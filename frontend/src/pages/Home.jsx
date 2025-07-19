@@ -26,13 +26,28 @@ const Home = () => {
       console.log(error)
     }
   }
+
+  const startRecognition = () => {
+    try{
+      recognitionRef.current?.start();
+      setListening(true);
+    }
+    catch(error){
+      if(!error.message.includes("start")){
+        console.error("Recognition error:", error);
+      }
+    }
+  };
+
+
+  
   //setting up speak functionality
   const speak=(text)=>{
     const utterence = new SpeechSynthesisUtterance(text);   //inbuilt-in function to convert text to speech
     isSpeakingRef.current = true; //set isSpeakingRef to true when speaking starts
     utterence.onend=() =>{
       isSpeakingRef.current = false; //set isSpeakingRef to false when speaking ends
-      recognitionRef.current?.start() //restart recognition if it exists
+      startRecognition();
     }
     synth.speak(utterence); //speak the text
 
