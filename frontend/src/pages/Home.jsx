@@ -25,11 +25,33 @@ const Home = () => {
     window.speechSynthesis.speak(utterence); //speak the text
 
   }
+  const handleCommand=(data)=>{
+    const {type,userInput,response}=data
+      speak(response);
+    
+    if (type === 'google-search') {
+      const query = encodeURIComponent(userInput);
+      window.open(`https://www.google.com/search?q=${query}`, '_blank');
+    }
+     if (type === 'calculator-open') {
   
+      window.open(`https://www.google.com/search?q=calculator`, '_blank');
+    }
+     if (type === "instagram-open") {
+      window.open(`https://www.instagram.com/`, '_blank');
+    }
+    if (type ==="facebook-open") {
+      window.open(`https://www.facebook.com/`, '_blank');
+    }
+     if (type ==="weather-show") {
+      window.open(`https://www.google.com/search?q=weather`, '_blank');
+    }
 
-
-
-
+    if (type === 'youtube-search' || type === 'youtube-play') {
+      const query = encodeURIComponent(userInput);
+      window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
+    }
+  }
 
   //setting up web speech api
   useEffect(()=>{
@@ -46,8 +68,7 @@ const Home = () => {
     //if the transcript includes the assistant name, then we can give response
     if (transcript.toLowerCase().includes(userData.assistantName.toLowerCase())) {
     const data=await getGeminiResponse(transcript);
-    console.log("Gemini API response:", data);
-    speak(data.response); //speak the response from Gemini API
+    handleCommand(data); //handle the command based on the type
     }
 }
     recognition.start();
