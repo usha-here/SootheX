@@ -1,5 +1,5 @@
 import axios from 'axios'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { userDataContext } from '../context/userContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -25,11 +25,15 @@ const Home = () => {
       setUserData(null)
       console.log(error)
     }
-
   }
   //setting up speak functionality
   const speak=(text)=>{
     const utterence = new SpeechSynthesisUtterance(text);   //inbuilt-in function to convert text to speech
+    isSpeakingRef.current = true; //set isSpeakingRef to true when speaking starts
+    utterence.onend=() =>{
+      isSpeakingRef.current = false; //set isSpeakingRef to false when speaking ends
+      recognitionRef.current?.start() //restart recognition if it exists
+    }
     synth.speak(utterence); //speak the text
 
   }
@@ -73,12 +77,12 @@ const Home = () => {
     const isRecognizingRef={current: false}; //to check if the recognition is already in progress 
 
     const safeRecognition=()=>{
-      if(!isSpeakingRef && !isRecognizingRef){
+      if(!isSpeakingRef.current && !isRecognizingRef.current){
         try {
           recognition.start(); //start the speech recognition
           console.log("Recognition started");
         } catch (err) {
-          if(err.name!== 'InvalidStateError'){
+          if(err.name !== 'InvalidStateError'){
             console.error("Start error:", err );
           }
           
@@ -87,32 +91,59 @@ const Home = () => {
     }
     recognition.onstart = () => {
       console.log("Recognition started");
-    isRecognizingRef.current = true;
+    isRecognizingRef.current = true;     //recognition is in progress
     setListening(true);
   };
     recognition.onend = () => {
       console.log("Recognition ended");
     isRecognizingRef.current = false;
     setListening(false);
-
     if(!isSpeakingRef.current){
       setTimeout(() => {
         safeRecognition(); //restart the recognition after 1 second if not speaking
       }, 1000);
     }
+  };
 
-    
+     recognition.onerror = (event) => {
+    console.warn("Recognition error:", event.error);
+    isRecognizingRef.current = false;
+    setListening(false);
+    if (event.error !== "aborted" && !isSpeakingRef.current) {
+      setTimeout(() => {
+        safeRecognition(); 
+      }, 1000);
+    }
+  };
+
 
     recognition.onresult=async(e)=>{
     const transcript = e.results[e.results.length - 1][0].transcript.trim();   //inside trancript we have our speech converted into text
     console.log("heard:"+ transcript);
+
     //if the transcript includes the assistant name, then we can give response
     if (transcript.toLowerCase().includes(userData.assistantName.toLowerCase())) {
+      recognition.stop(); 
+      isRecognizingRef.current = false; 
+      setListening(false); 
     const data=await getGeminiResponse(transcript);
-    handleCommand(data); //handle the command based on the type
+    handleCommand(data); 
     }
-  };
-} },[]);
+  }
+  const fallback=setInterval(() => {
+    if(!isRecognizingRef.current && !isSpeakingRef.current){
+      safeRecognition(); //if not recognizing and not speaking, then start the recognition
+    }
+  } , 10000); 
+  safeRecognition();
+
+  return () => {
+    recognition.stop();
+    setListening(false);
+    isRecognizingRef.current = false;
+    clearInterval(fallback);
+  }
+}, [])
 
 
 
