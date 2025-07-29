@@ -2,6 +2,8 @@ import axios from 'axios'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { userDataContext } from '../context/userContext'
 import { useNavigate } from 'react-router-dom'
+import aiImg from '../assets/ai.gif'
+import userImg from '../assets/user.gif'
 
 
 const Home = () => {
@@ -10,9 +12,14 @@ const Home = () => {
   const navigate = useNavigate()
 
   const [listening,setListening]=useState(false)
+
+  const[userText, setUserText]=useState("")  //user input text
+  const [aiText, setAiText]=useState("")     //ai response text
   const isSpeakingRef=useRef(false)
   const recognitionRef=useRef(null)
+  const isRecognizingRef=useRef(false) //to check if recognition is in progress
   const synth=window.speechSynthesis
+
 
 
 
@@ -54,6 +61,7 @@ const Home = () => {
 
     isSpeakingRef.current = true; //set isSpeakingRef to true when speaking starts
     utterence.onend=() =>{
+      setAiText(""); //clear the ai text after speaking
       isSpeakingRef.current = false; //set isSpeakingRef to false when speaking ends
       startRecognition();
     }
@@ -97,7 +105,6 @@ const Home = () => {
     recognition.lang = 'en-US'; //convert speech into english language
     recognitionRef.current = recognition;
 
-    const isRecognizingRef={current: false}; //to check if the recognition is already in progress 
 
     const safeRecognition=()=>{
       if(!isSpeakingRef.current && !isRecognizingRef.current){
@@ -146,12 +153,16 @@ const Home = () => {
 
     //if the transcript includes the assistant name, then we can give response
     if (transcript.toLowerCase().includes(userData.assistantName.toLowerCase())) {
+      setAiText("");
+      setUserText(transcript);
       recognition.stop(); 
       isRecognizingRef.current = false; 
       setListening(false); 
     const data=await getGeminiResponse(transcript);
     handleCommand(data); 
-    }
+    setAiText(data.response); //set the ai text to response
+    setUserText(""); //clear the user text after getting response
+  }
   }
   const fallback=setInterval(() => {
     if(!isRecognizingRef.current && !isSpeakingRef.current){
@@ -186,9 +197,13 @@ const Home = () => {
     <img src={userData?.assistantImage} alt="" className='h-full object-cover'/>
 </div>
       <h1 className='text-white text-[18px] font-semibold'>I'm  {userData?.assistantName}</h1>
+      
+      {!aiText && <img src={userImg} alt="" className='w-[200px]'/>}
+      {aiText && <img src={aiImg} alt="" className='w-[200px]'/>}
     
-    
+    <h1 className='text-white text-[18px] font-semibold text-wrap'>{userText?userText:aiText?aiText:null}
 
+    </h1>
     </div>
   )
 }
