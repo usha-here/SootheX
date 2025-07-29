@@ -100,10 +100,7 @@ const Home = () => {
 
   //setting up web speech api
   useEffect(()=>{
-      const greeting = new SpeechSynthesisUtterance(`Hello ${userData.name}, I am ${userData.assistantName}. Pleased to meet you! What can I help you with?`);
-  greeting.lang = 'hi-IN';
-  window.speechSynthesis.speak(greeting);
-
+    
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();   //recognition is object of SpeechRecognition()
@@ -184,6 +181,10 @@ const Home = () => {
     setUserText(""); //clear the user text after getting response
   }
   }
+    const greeting = new SpeechSynthesisUtterance(`Hello ${userData.name}, I am ${userData.assistantName}. Pleased to meet you! What can I help you with?`);
+  greeting.lang = 'hi-IN';
+  window.speechSynthesis.speak(greeting);
+
 
   return () => {
     isMounted = false;
