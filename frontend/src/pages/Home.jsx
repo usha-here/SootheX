@@ -32,15 +32,17 @@ const Home = () => {
   }
 
   const startRecognition = () => {
+    if (!isSpeakingRef.current && !isRecognizingRef.current) {
     try{
       recognitionRef.current?.start();
-      setListening(true);
+      console.log("Recognition requested to start");
     }
     catch(error){
-      if(!error.message.includes("start")){
-        console.error("Recognition error:", error);
+      if(error.name !== 'InvalidStateError'){
+        console.error("Start error:", error);
       }
     }
+  }
   };
 
 
@@ -60,8 +62,11 @@ const Home = () => {
     utterence.onend=() =>{
       setAiText(""); //clear the ai text after speaking
       isSpeakingRef.current = false; //set isSpeakingRef to false when speaking ends
-      startRecognition();
+      setTimeout(() => {
+        startRecognition();
+      }, 800);
     }
+    synth.cancel(); //cancel any ongoing speech
     synth.speak(utterence); //speak the text
 
   }
@@ -100,34 +105,41 @@ const Home = () => {
     const recognition = new SpeechRecognition();   //recognition is object of SpeechRecognition()
     recognition.continuous = true; //to keep listening
     recognition.lang = 'en-US'; //convert speech into english language
+    recognition.interimResults = false; //to get the interim results while speaking
     recognitionRef.current = recognition;
+    let isMounted = true;
 
-
-    const safeRecognition=()=>{
-      if(!isSpeakingRef.current && !isRecognizingRef.current){
-        try {
-          recognition.start(); //start the speech recognition
-          console.log("Recognition started");
-        } catch (err) {
-          if(err.name !== 'InvalidStateError'){
-            console.error("Start error:", err );
+    const startTimeout=setTimeout(()=>{
+      if(isMounted && !isSpeakingRef.current && !isRecognizingRef.current){
+        try{
+          recognition.start();
+          console.log("Recognition requested to start");
+        } catch (e) {
+          if(e.name !== 'InvalidStateError'){
+            console.error(e);
           }
-          
         }
-      }
-    }
+     }
+    }, 1000);
+
     recognition.onstart = () => {
-      console.log("Recognition started");
     isRecognizingRef.current = true;     //recognition is in progress
     setListening(true);
   };
-    recognition.onend = () => {
-      console.log("Recognition ended");
+
+  recognition.onend = () => {
     isRecognizingRef.current = false;
     setListening(false);
-    if(!isSpeakingRef.current){
+    if(isMounted && !isSpeakingRef.current){
       setTimeout(() => {
-        safeRecognition(); //restart the recognition after 1 second if not speaking
+        if(isMounted){
+        try{
+          recognition.start();
+          console.log("Recognition started");
+        } catch (e) {
+          if(e.name !== 'InvalidStateError') console.error(e);
+        } 
+      }
       }, 1000);
     }
   };
@@ -136,9 +148,16 @@ const Home = () => {
     console.warn("Recognition error:", event.error);
     isRecognizingRef.current = false;
     setListening(false);
-    if (event.error !== "aborted" && !isSpeakingRef.current) {
+    if (event.error !== "aborted" && isMounted && !isSpeakingRef.current) {
       setTimeout(() => {
-        safeRecognition(); 
+        if(isMounted){
+          try{
+            recognition.start();
+            console.log("Recognition restarted after error");
+          } catch (e) {
+            if (e.name !== 'InvalidStateError') console.error(e);
+          }
+        }
       }, 1000);
     }
   };
@@ -161,18 +180,13 @@ const Home = () => {
     setUserText(""); //clear the user text after getting response
   }
   }
-  const fallback=setInterval(() => {
-    if(!isRecognizingRef.current && !isSpeakingRef.current){
-      safeRecognition(); //if not recognizing and not speaking, then start the recognition
-    }
-  } , 10000); 
-  safeRecognition();
 
   return () => {
+    isMounted = false;
+    clearTimeout(startTimeout);
     recognition.stop();
     setListening(false);
     isRecognizingRef.current = false;
-    clearInterval(fallback);
   }
 }, [])
 
