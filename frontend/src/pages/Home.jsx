@@ -4,24 +4,21 @@ import { userDataContext } from '../context/userContext'
 import { useNavigate } from 'react-router-dom'
 import aiImg from '../assets/ai.gif'
 import userImg from '../assets/user.gif'
-
+import { RiMenuUnfold2Line } from "react-icons/ri";
+import { RxCross1 } from "react-icons/rx";
 
 const Home = () => {
   
   const {userData,serverUrl,setUserData,getGeminiResponse} = useContext(userDataContext)
   const navigate = useNavigate()
-
   const [listening,setListening]=useState(false)
-
   const[userText, setUserText]=useState("")  //user input text
   const [aiText, setAiText]=useState("")     //ai response text
   const isSpeakingRef=useRef(false)
   const recognitionRef=useRef(null)
   const isRecognizingRef=useRef(false) //to check if recognition is in progress
   const synth=window.speechSynthesis
-
-
-
+  const [ham,setHam]=useState(false)
 
   const handleLogOut=async ()=>{
     try {
@@ -35,15 +32,17 @@ const Home = () => {
   }
 
   const startRecognition = () => {
+    if (!isSpeakingRef.current && !isRecognizingRef.current) {
     try{
       recognitionRef.current?.start();
-      setListening(true);
+      console.log("Recognition requested to start");
     }
     catch(error){
-      if(!error.message.includes("start")){
-        console.error("Recognition error:", error);
+      if(error.name !== 'InvalidStateError'){
+        console.error("Start error:", error);
       }
     }
+  }
   };
 
 
@@ -63,8 +62,11 @@ const Home = () => {
     utterence.onend=() =>{
       setAiText(""); //clear the ai text after speaking
       isSpeakingRef.current = false; //set isSpeakingRef to false when speaking ends
-      startRecognition();
+      setTimeout(() => {
+        startRecognition();
+      }, 800);
     }
+    synth.cancel(); //cancel any ongoing speech
     synth.speak(utterence); //speak the text
 
   }
@@ -98,39 +100,47 @@ const Home = () => {
 
   //setting up web speech api
   useEffect(()=>{
+    
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();   //recognition is object of SpeechRecognition()
     recognition.continuous = true; //to keep listening
     recognition.lang = 'en-US'; //convert speech into english language
+    recognition.interimResults = false; //to get the interim results while speaking
     recognitionRef.current = recognition;
+    let isMounted = true;
 
-
-    const safeRecognition=()=>{
-      if(!isSpeakingRef.current && !isRecognizingRef.current){
-        try {
-          recognition.start(); //start the speech recognition
-          console.log("Recognition started");
-        } catch (err) {
-          if(err.name !== 'InvalidStateError'){
-            console.error("Start error:", err );
+    const startTimeout=setTimeout(()=>{
+      if(isMounted && !isSpeakingRef.current && !isRecognizingRef.current){
+        try{
+          recognition.start();
+          console.log("Recognition requested to start");
+        } catch (e) {
+          if(e.name !== 'InvalidStateError'){
+            console.error(e);
           }
-          
         }
-      }
-    }
+     }
+    }, 1000);
+
     recognition.onstart = () => {
-      console.log("Recognition started");
     isRecognizingRef.current = true;     //recognition is in progress
     setListening(true);
   };
-    recognition.onend = () => {
-      console.log("Recognition ended");
+
+  recognition.onend = () => {
     isRecognizingRef.current = false;
     setListening(false);
-    if(!isSpeakingRef.current){
+    if(isMounted && !isSpeakingRef.current){
       setTimeout(() => {
-        safeRecognition(); //restart the recognition after 1 second if not speaking
+        if(isMounted){
+        try{
+          recognition.start();
+          console.log("Recognition started");
+        } catch (e) {
+          if(e.name !== 'InvalidStateError') console.error(e);
+        } 
+      }
       }, 1000);
     }
   };
@@ -139,9 +149,16 @@ const Home = () => {
     console.warn("Recognition error:", event.error);
     isRecognizingRef.current = false;
     setListening(false);
-    if (event.error !== "aborted" && !isSpeakingRef.current) {
+    if (event.error !== "aborted" && isMounted && !isSpeakingRef.current) {
       setTimeout(() => {
-        safeRecognition(); 
+        if(isMounted){
+          try{
+            recognition.start();
+            console.log("Recognition restarted after error");
+          } catch (e) {
+            if (e.name !== 'InvalidStateError') console.error(e);
+          }
+        }
       }, 1000);
     }
   };
@@ -164,32 +181,43 @@ const Home = () => {
     setUserText(""); //clear the user text after getting response
   }
   }
-  const fallback=setInterval(() => {
-    if(!isRecognizingRef.current && !isSpeakingRef.current){
-      safeRecognition(); //if not recognizing and not speaking, then start the recognition
-    }
-  } , 10000); 
-  safeRecognition();
+    const greeting = new SpeechSynthesisUtterance(`Hello ${userData.name}, I am ${userData.assistantName}. Pleased to meet you! What can I help you with?`);
+  greeting.lang = 'hi-IN';
+  window.speechSynthesis.speak(greeting);
+
 
   return () => {
+    isMounted = false;
+    clearTimeout(startTimeout);
     recognition.stop();
     setListening(false);
     isRecognizingRef.current = false;
-    clearInterval(fallback);
   }
+  
 }, [])
-
-
-
-
-
-
 
   
   return (
     <div className='w-full h-[100vh] bg-gradient-to-t from-[black] to-[#02023d] 
-    flex justify-center items-center flex-col gap-[15px]'>
-    
+    flex justify-center items-center flex-col gap-[15px] overflow-hidden'>
+    <RiMenuUnfold2Line className='lg:hidden text-white absolute top-[20px] right-[20px] w-[25px] h-[25px] cursor-pointer' onClick={()=>setHam(true)}/>
+    <div className={`absolute lg:hidden top-0 w-full h-full bg-[#00000053] backdrop-blur-lg p-[20px] flex flex-col gap-[20px] items-start ${ham?"translate-x-0":"translate-x-full"} transition-transform`}>
+     <RxCross1 className=' text-white absolute top-[20px] right-[20px] w-[25px] h-[25px] cursor-pointer ' onClick={()=>setHam(false)}/>
+<button className='min-w-[150px] h-[60px]  text-black font-semibold   bg-white rounded-full cursor-pointer text-[19px] ' onClick={handleLogOut}>Log Out</button>
+      <button className='min-w-[150px] h-[60px]  text-black font-semibold  bg-white  rounded-full cursor-pointer text-[19px] px-[20px] py-[10px] ' onClick={()=>navigate("/customize")}>Customize your Assistant</button>
+
+<div className='w-full h-[2px] bg-gray-400'></div>
+<h1 className='text-white font-semibold text-[19px]'>History</h1>
+
+<div className='w-full h-[400px] gap-[20px] overflow-y-auto flex flex-col truncate'>
+  {userData.history?.map((his)=>(
+    <div className='text-gray-200 text-[18px] w-full h-[30px]  '>{his}</div>
+  ))}
+
+</div>
+
+
+    </div>
     <button className='min-w-[150px] h-[60px] mt-[30px] text-black font-semibold absolute hidden lg:block top-[20px] right-[20px]  bg-white rounded-full cursor-pointer text-[19px] ' onClick={handleLogOut}>Log Out</button>
     <button className='min-w-[150px] h-[60px] mt-[30px] text-black font-semibold  bg-white absolute top-[100px] right-[20px] rounded-full cursor-pointer text-[19px] px-[20px] py-[10px] hidden lg:block ' onClick={()=>navigate("/customize")}>Customize your Assistant</button>
       
