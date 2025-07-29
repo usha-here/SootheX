@@ -6,7 +6,7 @@ import axios from 'axios';
 
 export const userDataContext = createContext();
 const UserContext = ({children}) => {
-  const serverUrl="http://localhost:8000"
+  const serverUrl="https://soothex-backend.onrender.com"
   const [userData,setUserData] = useState(null)
   const [frontendImage, setFrontendImage] = useState(null)
     const [backendImage, setBackendImage] = useState(null)
